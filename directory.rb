@@ -1,4 +1,9 @@
 #array time
+@students = []
+def append_students(name, cohort)
+  @students << {name: name, cohort: cohort}
+end
+
 def input_students
   months_array = [
     :January,
@@ -16,27 +21,26 @@ def input_students
   ]
   puts "Please enter names"
   puts "To finish, hit return twice"
-  @students = []
-  name = gets.chomp.intern
+  name = STDIN.gets.chomp.intern
   puts "Please enter cohort"
-  cohort = gets.chomp.intern
+  cohort = STDIN.gets.chomp.intern
   if months_array.include?(cohort) == false
     puts "That isn't a valid month, please re-enter"
-    cohort = gets.chomp.intern
+    cohort = STDIN.gets.chomp.intern
   end
   while !name.empty? do
     cohort = "Probably June" if cohort.empty?
-    @students << {name: name, cohort: cohort}
+    append_students(name, cohort)
     x = ""
     x = "s" if @students.count > 1
     puts "Now we have #{@students.count} student" + x
-    name = gets.chomp.intern
+    name = STDIN.gets.chomp.intern
     break if name.empty?
     puts "please enter cohort"
-    cohort = gets.chomp.intern
+    cohort = STDIN.gets.chomp.intern
     if months_array.include?(cohort) == false
       puts "That isn't a valid month, please re-enter"
-      cohort = gets.chomp.intern
+      cohort = STDIN.gets.chomp.intern
     end
   end
 end
@@ -90,13 +94,25 @@ def save_students
   file.close
 end
 
-def load_students
-  file = File.open("students.csv", "r")
+def load_students(filename = "students.csv")
+  file = File.open(filename, "r")
   file.readlines.each do |line|
     name, cohort = line.chomp.split(",")
-    @students << {name: name, cohort: cohort.to_sym}
+    append_students(name, cohort)
   end
   file.close
+end
+
+def try_load_students(filename = "students.csv")
+  filename = ARGV.first if ARGV.first
+#  return if filename.nil?
+  if File.exists?(filename)
+    load_students(filename)
+    puts "Loaded #{@students.count} from #{filename}"
+  else
+    puts "Sorry, #{filename} doesn't exist."
+    exit
+  end
 end
 
 def process(selection)
@@ -119,8 +135,9 @@ end
 def interactive_menu
   @students = []
   loop do
+    try_load_students
     print_menu
-    process(gets.chomp)
+    process(STDIN.gets.chomp)
   end
 end
 
